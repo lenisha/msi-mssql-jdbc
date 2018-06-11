@@ -9,14 +9,14 @@ Steps to enable MSI in Java application are described below
 
 - Create AppService and Azure SQL database.
 
-- Add the Connection String from Azure SQL database to **App Service / Application Settings**  ConnectionStrings settings (**do NOT include username/password!**)
+- Add the Connection String from Azure SQL database to **App Service / Application Settings**  App settings (**do NOT include username/password!**)
 ![Azure SQL Connection](https://github.com/lenisha/tutorial-hibernate-jpa/raw/master/img/ConnectionString.PNG "Azure App Service Settings")
 
 DB connection url for Azure SQL is usually in thins format `jdbc:sqlserver://jnditestsrv.database.windows.net:1433;database=jnditestsql;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;`
 
-Placing connection string which contains in credential  information in AppSettings/Connection Strings section allows us to hide it from unauthorized users view. 
+Adding Setting `JAVA_OPTS` with value `-D<connection name>=<jdbc url>`  would create environment variable `connection name` available to the Java application.
+ In our example above - `SQLDB_URL`
 
-Adding ConnectionString in App Settings would create environment variable `SQLAZURECONNSTR_<Name of the Connection>` available to the Java application.   In our example above - `SQLAZURECONNSTR_UsersDB`
 
 - Add MSI to AppService and grant it permissions to SQL database
 
@@ -65,7 +65,7 @@ In this example it's added to `main/webapp/META-INF/context.xml` anc contains th
 	    driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
 	    maxActive="8" maxIdle="4" 
 	    name="jdbc/tutorialDS" type="javax.sql.DataSource"
-		url="${SQLAZURECONNSTR_UsersDB}"
+		url="${SQLDB_URL}"
 		msiEnable="true" factory="com.microsoft.sqlserver.msi.MsiDataSourceFactory" />
     
 </Context>
@@ -73,6 +73,7 @@ In this example it's added to `main/webapp/META-INF/context.xml` anc contains th
 
 - `msiEnable` flag tells Factory to use MSI identity to establish connection to Datasource
 - `factory` overrides default Tomcat `BasicDataSourceFactory`, and uses `MSI_ENDPOINT and MSI_SECRET` to obtain the token and use it for the connection.
+- `url` points to url, in the example above provided by environment variable set by `JAVA_OPTS`
 
 
 	
@@ -81,3 +82,4 @@ In this example it's added to `main/webapp/META-INF/context.xml` anc contains th
 and copy resulting jar file in the application directory
 
 
+[ADAL4J](https://github.com/AzureAD/azure-activedirectory-library-for-java)
