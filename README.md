@@ -10,7 +10,7 @@ Steps to enable MSI in Java application are described below
 - Create AppService and Azure SQL database.
 
 - Add the Connection String from Azure SQL database to **App Service / Application Settings**  App settings (**do NOT include username/password!**)
-![Azure SQL Connection](https://github.com/lenisha/tutorial-hibernate-jpa/raw/master/img/ConnectionString.PNG "Azure App Service Settings")
+![Azure SQL Connection](https://github.com/lenisha/spring-jndi-appservice/raw/master/img/ConnectionString.PNG "Azure App Service Settings")
 
 DB connection url for Azure SQL is usually in thins format `jdbc:sqlserver://jnditestsrv.database.windows.net:1433;database=jnditestsql;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;`
 
