@@ -13,6 +13,9 @@ import java.sql.ResultSet;
 
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -20,8 +23,6 @@ public class MsiDataSourceFactory extends BasicDataSourceFactory implements Obje
 
     protected static final Logger logger = LogManager.getLogger(MsiDataSourceFactory.class);
 
-  
-  
     //http://tomcat.apache.org/tomcat-6.0-doc/jndi-resources-howto.html#Adding_Custom_Resource_Factories
     @Override
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable environment) throws Exception {
@@ -33,28 +34,84 @@ public class MsiDataSourceFactory extends BasicDataSourceFactory implements Obje
         Reference ref = (Reference) obj;
         if (!"javax.sql.DataSource".equals(ref.getClassName())) {
             return null;
-
         }
-
-        if (ref.get("msiEnable") != null) {
+        if ( isMsiEnabled(ref) ) {
             logger.info("Enabling MSI  Datasource");
             addAccessToken(ref);
         }
-        for (RefAddr refaddr: Collections.list( ((Reference)obj).getAll() ) ) {
-            logger.info("refernce proprerties" + refaddr.toString());
-        }
         // Return the customized instance
         return super.getObjectInstance(obj, name, nameCtx, environment);
+    }
 
+    private boolean isMsiEnabled(Reference ref) {
+
+        // Environment variable overrides any context setting or url set
+        String msiEnableEnv = System.getenv("JDBC_MSI_ENABLE");
+        if ( !"".equals(msiEnableEnv) && msiEnableEnv.compareToIgnoreCase("true") == 0) {
+            logger.debug("MSI Enabled in Environement");
+            return true;
+        }
+
+        // Application Setting variable overrides any context setting or url set
+        msiEnableEnv = System.getenv("APPSETTING_JDBC_MSI_ENABLE");
+        if ( !"".equals(msiEnableEnv) && msiEnableEnv.compareToIgnoreCase("true") == 0) {
+            logger.debug("MSI Enabled in AppSetting Environement");
+            return true;
+        }
+
+        // URL Setting variable overrides any context setting
+        StringRefAddr msiEnableUrl = (StringRefAddr)ref.get("url");
+        if ( msiEnableUrl != null ) {
+            String msiEnableUrlValue = (String)msiEnableUrl.getContent();
+            msiEnableUrlValue = msiEnableUrlValue.replaceAll("\\s+", "");
+
+            if ( msiEnableUrlValue.indexOf("msiEnable=true") > 0) {
+                logger.debug("MSI Enabled in Url reference");
+                return true;
+            }
+        }
+
+        // Application Setting variable overrides any context setting or url set
+        StringRefAddr msiEnableCtx = (StringRefAddr)ref.get("msiEnable");
+        if ( msiEnableCtx != null ) {
+            String msiEnableCtxValue = (String)msiEnableCtx.getContent();
+            if ( msiEnableCtxValue.compareToIgnoreCase("true") == 0 ) {
+                logger.debug("MSI Enabled in context reference");
+                return true;
+            }
+        }
+        return  false;
     }
 
     private void addAccessToken(Reference ref) throws Exception {
 
         String accessToken = MsiAuthToken.aquireMsiToken("https://database.windows.net/");
-        //String accessToken="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6ImlCakwxUmNxemhpeTRmcHhJeGRacW9oTTJZayIsImtpZCI6ImlCakwxUmNxemhpeTRmcHhJeGRacW9oTTJZayJ9.eyJhdWQiOiJodHRwczovL2RhdGFiYXNlLndpbmRvd3MubmV0LyIsImlzcyI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0LzcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0Ny8iLCJpYXQiOjE1Mjg3MzQyNDIsIm5iZiI6MTUyODczNDI0MiwiZXhwIjoxNTI4NzYzMzQyLCJhaW8iOiJZMmRnWU5qUzJHQzR1MkNQc1g5VDlRUzlIdW5iQUE9PSIsImFwcGlkIjoiNzJjMGJmNzItODM3MS00MDQ1LWI5YjAtNzNjZjVkM2QwZGZkIiwiYXBwaWRhY3IiOiIyIiwiZV9leHAiOjI4ODAwMCwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3LyIsIm9pZCI6IjgyY2M1Zjk2LTIyNmEtNDcyMS05MDJjLTc0NTFjYzY4ZmQ4MCIsInN1YiI6IjgyY2M1Zjk2LTIyNmEtNDcyMS05MDJjLTc0NTFjYzY4ZmQ4MCIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInV0aSI6ImhfUUlXSGRTSFVLc0ZHY2hJZkllQUEiLCJ2ZXIiOiIxLjAifQ.TlB6h6IeF6g5PS76GwVgvHgoVoPKZeN09pNoH0xaN8yValHgMwRev_eploq5HmmdvdYhIiTDKBAFtN5uYYlMmZDdIo92UCq7YizCY-dGgf5D3GQc7FFbVHPU-adxeHSI7n5k5iWrTk_S5dr0P7pP-AjPrpg6wEFM7ZzQg0y8jIuRorYEca3ltkTld5ld6BA5I855qxjukJIVHN6EYCyiLORUbevLEmsLExeQZFfka1VAfm-OF5s_qXx85QikfGqJxMOiQwwlHra1uMhWdpiItt6VNVtqH8RpEiSwo8sARHJqI5nJ_LXocYEdJO4tUoAWZRf5483qjXGrz9vo6gIQ_w";
         logger.info("adding connectionProperties with the MSI token");
         StringRefAddr ra = new StringRefAddr("connectionProperties","accessToken=" + accessToken + ";");
         ref.add(ra);
 
+    }
+
+
+    private void printDebug() {
+        if ( logger.isDebugEnabled() ) {
+            Map<String, String> env = System.getenv();
+            for (String envName : env.keySet()) {
+                logger.debug("MSI System env:" + envName + " " + env.get(envName));
+            }
+            Properties props = System.getProperties();
+            for (String propName : props.stringPropertyNames()) {
+                logger.debug("MSI System prop:" + propName + " " + props.getProperty(propName));
+            }
+        }
+    }
+
+    private void pringDebugConnection(Reference obj) {
+
+        if ( logger.isDebugEnabled() ) {
+            for (RefAddr refaddr : Collections.list(((Reference) obj).getAll())) {
+                logger.debug("reference properties" + refaddr.toString());
+            }
+        }
     }
 }

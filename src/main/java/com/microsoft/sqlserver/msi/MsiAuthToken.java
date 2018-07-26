@@ -26,11 +26,11 @@ public class MsiAuthToken {
 
         if (endpoint == null || endpoint.isEmpty()) {
             logger.error("NO MSI_ENDPOINT FOUND");
-            throw new Exception("NO MSI_ENDPOINT FOUND");
+            throw new NoMSIFoundException("NO MSI_ENDPOINT FOUND");
         }
         if (secret == null || secret.isEmpty()) {
             logger.error("NO MSI_SECRET FOUND");
-            throw new Exception("NO MSI_SECRET FOUND");
+            throw new NoMSIFoundException("NO MSI_SECRET FOUND");
         }
         String tokenUrl = endpoint + "?resource="+resourceURI+"&api-version=" + API_VERSION;
 
@@ -38,17 +38,18 @@ public class MsiAuthToken {
         headers.put("Secret", secret);
         headers.put("Accept", "application/json, text/javascript, */*");
 
-        logger.info("Invoking endpoint to get token: " + tokenUrl);
-        final String json = HttpHelper.executeHttpGet(tokenUrl,headers,null);
-        logger.debug("Token Response: " + json);
 
         MsiAuthResponse response = null;
         try {
+            logger.debug("Invoking endpoint to get token: " + tokenUrl);
+            final String json = HttpHelper.executeHttpGet(tokenUrl,headers,null);
+            //logger.debug("Token Response: " + json);
+
             response = convertJsonToObject(json, MsiAuthResponse.class);
-            logger.debug("MSI Access Token: " + response.getAccessToken());
+            logger.debug("MSI Access Token Expiration: " + response.getExpiresOn());
 
         } catch (Exception ex) {
-            logger.error("Error Deserializing MSI token",ex);
+            logger.error("Error Getting MSI token",ex);
             throw ex;
         }
         return response.getAccessToken();

@@ -10,9 +10,9 @@ Steps to enable MSI in Java application are described below
 - Create AppService and Azure SQL database.
 
 - Add the Connection String from Azure SQL database to **App Service / Application Settings**  App settings (**do NOT include username/password!**)
-![Azure SQL Connection](https://github.com/lenisha/tutorial-hibernate-jpa/raw/master/img/ConnectionString.PNG "Azure App Service Settings")
+![Azure SQL Connection](https://github.com/lenisha/spring-jndi-appservice/raw/master/img/ConnectionString.PNG "Azure App Service Settings")
 
-DB connection url for Azure SQL is usually in thins format `jdbc:sqlserver://jnditestsrv.database.windows.net:1433;database=jnditestsql;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;`
+DB connection url for Azure SQL is usually in thins format `jdbc:sqlserver://server.database.windows.net:1433;database=db;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;`
 
 Adding Setting `JAVA_OPTS` with value `-D<connection name>=<jdbc url>`  would create environment variable `connection name` available to the Java application.
  In our example above - `SQLDB_URL`
@@ -66,17 +66,33 @@ In this example it's added to `main/webapp/META-INF/context.xml` anc contains th
 	    maxActive="8" maxIdle="4" 
 	    name="jdbc/tutorialDS" type="javax.sql.DataSource"
 		url="${SQLDB_URL}"
-		msiEnable="true" factory="com.microsoft.sqlserver.msi.MsiDataSourceFactory" />
+		factory="com.microsoft.sqlserver.msi.MsiDataSourceFactory" />
     
 </Context>
 ```
 
-- `msiEnable` flag tells Factory to use MSI identity to establish connection to Datasource
 - `factory` overrides default Tomcat `BasicDataSourceFactory`, and uses `MSI_ENDPOINT and MSI_SECRET` to obtain the token and use it for the connection.
 - `url` points to url, in the example above provided by environment variable set by `JAVA_OPTS`
 
+### Enable MSI for the JDBC Connection Factory
 
-	
+There are currently 3 ways to enable MSI for datasource connection Factory
+
+- Environment variable: `JDBC_MSI_ENABLE=true`, set it in ApplicationSettings for Azure WebApp
+
+- jdbcURL flag: to set it add in jdbc connection string `msiEnable=true`. E.g `jdbc:sqlserver://server.database.windows.net:1433;database=db;msiEnable=true;...`
+
+- `msiEnable` flag in context.xml . E.g
+```
+<Context>
+    <Resource auth="Container"
+	   ....
+		msiEnable="true"
+		factory="com.microsoft.sqlserver.msi.MsiDataSourceFactory" />
+
+</Context>
+```
+
 ## To build :
 `mvn clean package`
 and copy resulting jar file in the application directory
