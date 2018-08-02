@@ -19,6 +19,9 @@ import java.util.Properties;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+/**
+ * DataSource factory calls to be used in Tomcat context.xml
+ */
 public class MsiDataSourceFactory extends BasicDataSourceFactory implements ObjectFactory {
 
     protected static final Logger logger = LogManager.getLogger(MsiDataSourceFactory.class);

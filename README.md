@@ -1,3 +1,6 @@
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.microsoft.sqlserver.msi/msi-mssql-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.microsoft.sqlserver.msi/msi-mssql-jdbc)
+
+
 # DataSource factory for Tomcat leveraging Azure MSI (Managed Service Identity)
 
 App Service provides Managed Service Identity to the applications, thus eliminating secrets from your app, such as credentials in the connection strings. For the details on the setup of MSI refer:
@@ -97,5 +100,26 @@ There are currently 3 ways to enable MSI for datasource connection Factory
 `mvn clean package`
 and copy resulting jar file in the application directory
 
+## To publish on Maven Central
+Details on publishing process [OSS Maven Central process](https://central.sonatype.org/pages/requirements.html)
 
+- Generate gpg keys and send the public key to server
+```
+gpg --gen-key
+gpg --list-keys
+gpg --keyserver hkp://pool.sks-keyservers.net --send-keys XXXX
+```
+- Update settings.xml with connections to jira project and gpg pass phrase
+
+- Update pom.xml with all required information (as described in the link above) and plugins
+
+- Run SnapShot release, update version and Release to staging
+```
+mvn clean deploy
+mvn versions:set -DnewVersion=1.1.0
+mvn clean deploy
+```
+
+Verify in central after 30 min
+### References
 [ADAL4J](https://github.com/AzureAD/azure-activedirectory-library-for-java)
