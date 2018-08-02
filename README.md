@@ -40,7 +40,7 @@ This library Jar as well as JDBC driver for SQL Server that supports Token based
         <dependency>
             <groupId>com.microsoft.sqlserver.msi</groupId>
             <artifactId>msi-mssql-jdbc</artifactId>
-	        <version>1.0</version>
+	        <version>1.1.0</version>
         </dependency>
 
         <dependency>
