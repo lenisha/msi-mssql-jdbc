@@ -5,7 +5,7 @@
 
 	<groupId>com.microsoft.sqlserver.msi</groupId>
 	<artifactId>msi-mssql-jdbc</artifactId>
-	<version>1.1.0</version>
+	<version>1.1.1</version>
 	<packaging>jar</packaging>
 
 
@@ -163,7 +163,6 @@
     <developers>
         <developer>
             <name>Elena Neroslavskaya</name>
-            <email>eneros@microsoft.com</email>
             <organization>com.microsoft.lenisha</organization>
             <organizationUrl>http://github.com/lenisha/</organizationUrl>
         </developer>
