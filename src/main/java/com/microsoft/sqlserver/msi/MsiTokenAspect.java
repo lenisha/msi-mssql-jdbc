@@ -27,15 +27,17 @@ public class MsiTokenAspect {
 
         long now = System.currentTimeMillis() / 1000;
 
-        logger.debug("MSI Token validation now:" + now + " and it will expire at:" + MsiTokenCache.getExpiration());
+        logger.debug("MSI Token validation time now:" + now + " token expiration at:" + MsiTokenCache.getExpiration());
 
         if ( MsiTokenCache.getExpiration() > now  + SKEW) {
             // Token is still valid
+            logger.debug("Token is still valid");
             ds.addConnectionProperty("accessToken", MsiTokenCache.getToken() );
             return;
         }
         else {
             // token expired or was not obtained yet
+            logger.debug("Getting new token");
             String accessToken = MsiAuthToken.aquireAndCacheMsiToken("https://database.windows.net/");
             ds.addConnectionProperty("accessToken", accessToken);
         }
