@@ -29,7 +29,7 @@ public class MsiTokenAspect {
 
         logger.debug("MSI Token validation now:" + now + " and it will expire at:" + MsiTokenCache.getExpiration());
 
-        if ( MsiTokenCache.getExpiration() > now ) {
+        if ( MsiTokenCache.getExpiration() >= now ) {
             return;
         }
 

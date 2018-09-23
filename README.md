@@ -34,6 +34,7 @@ az sql server ad-admin create --resource-group <resource_group> --server-name <s
 
 In application `pom.xml` include the following libs, to be deployed with the application
 This library Jar as well as JDBC driver for SQL Server that supports Token based authentication
+and libraries required to activate aspects
 
 ```
      
@@ -54,7 +55,40 @@ This library Jar as well as JDBC driver for SQL Server that supports Token based
             <artifactId>mssql-jdbc</artifactId>
             <version>6.4.0.jre7</version>
         </dependency>
+        
+         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+            <version>${org.springframework-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>1.6.11</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.6.11</version>
+        </dependency>
 ```        
+## Enable MSI token refreshing Aspect
+Add aspect bean to beans definitions - `application-context.xml` or `*-dispatcher-servlet.xml` 
+
+```
+<beans xmlns="http://www.springframework.org/schema/beans"
+    ...
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+    ">
+
+  <aop:aspectj-autoproxy />
+
+   <bean id="msiAspect" class="com.microsoft.sqlserver.msi.MsiTokenAspect"/>
+</beans>
+```    
+    
 
 ## Define DataSource in Tomcat
 
@@ -65,36 +99,25 @@ In this example it's added to `main/webapp/META-INF/context.xml` anc contains th
 ```
 <Context>
     <Resource auth="Container" 
-	    driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
-	    maxActive="8" maxIdle="4" 
-	    name="jdbc/tutorialDS" type="javax.sql.DataSource"
-		url="${SQLDB_URL}"
-		factory="com.microsoft.sqlserver.msi.MsiDataSourceFactory" />
+        driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+        maxActive="8" maxIdle="4" 
+        name="jdbc/tutorialDS" type="javax.sql.DataSource"
+        url="${SQLDB_URL}"
+        factory="org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory" />
     
 </Context>
 ```
 
-- `factory` overrides default Tomcat `BasicDataSourceFactory`, and uses `MSI_ENDPOINT and MSI_SECRET` to obtain the token and use it for the connection.
 - `url` points to url, in the example above provided by environment variable set by `JAVA_OPTS`
 
 ### Enable MSI for the JDBC Connection Factory
 
-There are currently 3 ways to enable MSI for datasource connection Factory
+There are currently 2 ways to enable MSI for datasource connection Factory
 
 - Environment variable: `JDBC_MSI_ENABLE=true`, set it in ApplicationSettings for Azure WebApp
 
 - jdbcURL flag: to set it add in jdbc connection string `msiEnable=true`. E.g `jdbc:sqlserver://server.database.windows.net:1433;database=db;msiEnable=true;...`
 
-- `msiEnable` flag in context.xml . E.g
-```
-<Context>
-    <Resource auth="Container"
-	   ....
-		msiEnable="true"
-		factory="com.microsoft.sqlserver.msi.MsiDataSourceFactory" />
-
-</Context>
-```
 
 ## To build :
 `mvn clean package`
