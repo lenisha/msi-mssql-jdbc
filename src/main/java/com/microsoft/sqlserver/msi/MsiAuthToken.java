@@ -4,13 +4,20 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
+import com.microsoft.sqlserver.jdbc.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
 import java.io.Reader;
 import java.io.StringReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MsiAuthToken {
     public static final String API_VERSION="2017-09-01";
@@ -20,7 +27,7 @@ public class MsiAuthToken {
     protected static final Logger logger = LogManager.getLogger(MsiAuthToken.class);
 
 
-    public static String aquireMsiToken(String resourceURI) throws Exception  {
+    public static String aquireAndCacheMsiToken(String resourceURI) throws Exception  {
         String endpoint = System.getenv("MSI_ENDPOINT");
         String secret = System.getenv("MSI_SECRET");
 
@@ -43,7 +50,6 @@ public class MsiAuthToken {
         try {
             logger.debug("Invoking endpoint to get token: " + tokenUrl);
             final String json = HttpHelper.executeHttpGet(tokenUrl,headers,null);
-            //logger.debug("Token Response: " + json);
 
             response = convertJsonToObject(json, MsiAuthResponse.class);
             logger.debug("MSI Access Token Expiration: " + response.getExpiresOn());
@@ -52,7 +58,16 @@ public class MsiAuthToken {
             logger.error("Error Getting MSI token",ex);
             throw ex;
         }
+
+        cacheToken(response);
+
         return response.getAccessToken();
+    }
+
+    private static void cacheToken(MsiAuthResponse response) throws Exception {
+        logger.debug("Caching expiration" );
+        String gmtDate = response.getExpiresOn();
+        MsiTokenCache.saveExpiration(gmtDate);
     }
 
     public static <T> T convertJsonToObject(final String json, final Class<T> clazz) throws  JsonSyntaxException, JsonIOException {
@@ -60,4 +75,33 @@ public class MsiAuthToken {
         final Gson gson = new GsonBuilder().create();
         return gson.fromJson(reader, clazz);
     }
+
+    public static boolean isMsiEnabled(String jdbcUrl) {
+
+        // Environment variable overrides any context setting or url set
+        String msiEnableEnv = System.getenv("JDBC_MSI_ENABLE");
+        if (!StringUtils.isEmpty(msiEnableEnv) && msiEnableEnv.compareToIgnoreCase("true") == 0) {
+            logger.debug("MSI Enabled in Environement");
+            return true;
+        }
+
+        // Application Setting variable overrides any context setting or url set
+        msiEnableEnv = System.getenv("APPSETTING_JDBC_MSI_ENABLE");
+        if ( !StringUtils.isEmpty(msiEnableEnv) && msiEnableEnv.compareToIgnoreCase("true") == 0) {
+            logger.debug("MSI Enabled in AppSetting Environement");
+            return true;
+        }
+
+        // URL Setting variable overrides any context setting
+        if ( jdbcUrl != null ) {
+            jdbcUrl = jdbcUrl.replaceAll("\\s+", "");
+
+            if ( jdbcUrl.indexOf("msiEnable=true") > 0) {
+                logger.debug("MSI Enabled in Url reference");
+                return true;
+            }
+        }
+        return  false;
+    }
+
 }
