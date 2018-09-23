@@ -68,6 +68,7 @@ public class MsiAuthToken {
         logger.debug("Caching expiration" );
         String gmtDate = response.getExpiresOn();
         MsiTokenCache.saveExpiration(gmtDate);
+        MsiTokenCache.saveToken(response.getAccessToken());
     }
 
     public static <T> T convertJsonToObject(final String json, final Class<T> clazz) throws  JsonSyntaxException, JsonIOException {

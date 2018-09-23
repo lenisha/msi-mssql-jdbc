@@ -9,23 +9,28 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MsiTokenCache {
 
     private static String KEY_EXPIRE = "expiresOn";
+    private static String KEY_TOKEN = "accessToken";
 
-    private static ConcurrentHashMap<String,Long> cache = null;
+    private static ConcurrentHashMap<String,Object> cache = null;
 
-    protected static ConcurrentHashMap<String,Long> getCache() {
+    protected static ConcurrentHashMap<String,Object> getCache() {
         if (cache == null)
-           cache = new ConcurrentHashMap<String, Long>();
+           cache = new ConcurrentHashMap<String, Object>();
         return cache;
     }
 
     public static long getExpiration() {
         cache = getCache();
-        Long expiration = cache.get(KEY_EXPIRE);
+        Long expiration = (Long)cache.get(KEY_EXPIRE);
 
         if ( expiration != null )
             return expiration.longValue();
         else
             return 0;
+    }
+    public static String getToken() {
+        cache = getCache();
+        return (String)cache.get(KEY_TOKEN);
     }
 
     public static void saveExpiration(String expiration) throws Exception {
@@ -43,6 +48,11 @@ public class MsiTokenCache {
     private static void saveExpiration(long expiration) {
         cache = getCache();
         cache.put(KEY_EXPIRE,new Long(expiration));
+    }
+
+    public static void saveToken(String token) {
+        cache = getCache();
+        cache.put(KEY_TOKEN,token);
     }
 
 }
