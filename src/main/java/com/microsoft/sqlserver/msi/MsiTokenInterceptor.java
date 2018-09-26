@@ -4,11 +4,10 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.jdbc.pool.ConnectionPool;
 import org.apache.tomcat.jdbc.pool.JdbcInterceptor;
 import org.apache.tomcat.jdbc.pool.PooledConnection;
-import java.lang.reflect.Method;
+
 
 public class MsiTokenInterceptor extends JdbcInterceptor {
     protected static final Logger logger = LogManager.getLogger(MsiTokenInterceptor.class);
-    protected static long SKEW = 1;
 
     @Override
     public void reset(ConnectionPool parent, PooledConnection con) {
@@ -23,7 +22,7 @@ public class MsiTokenInterceptor extends JdbcInterceptor {
 
             logger.debug("MSI Token validation time now:" + now + " token expiration at:" + MsiTokenCache.getExpiration());
 
-            if ( MsiTokenCache.getExpiration() > now  + SKEW) {
+            if ( MsiTokenCache.getExpiration() > now  + MsiAuthToken.SKEW) {
                 // Token is still valid
                 logger.debug("Token is still valid");
             }

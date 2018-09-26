@@ -12,7 +12,6 @@ import org.aspectj.lang.annotation.Before;
 @Aspect
 public class MsiTokenAspect {
     protected static final Logger logger = LogManager.getLogger(MsiTokenAspect.class);
-    protected static long SKEW = 1;
 
     @Before(value = "execution (* org.apache.tomcat.dbcp.dbcp.BasicDataSource.getConnection())")
     public void onNewConnection(final JoinPoint pjp) throws Throwable {
@@ -29,7 +28,7 @@ public class MsiTokenAspect {
 
         logger.debug("MSI Token validation time now:" + now + " token expiration at:" + MsiTokenCache.getExpiration());
 
-        if ( MsiTokenCache.getExpiration() > now  + SKEW) {
+        if ( MsiTokenCache.getExpiration() > now  + MsiAuthToken.SKEW) {
             // Token is still valid
             logger.debug("Token is still valid");
             ds.addConnectionProperty("accessToken", MsiTokenCache.getToken() );

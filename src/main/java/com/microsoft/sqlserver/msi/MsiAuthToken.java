@@ -27,6 +27,7 @@ public class MsiAuthToken {
     public static final String MSI_SECRET="MSI_SECRET";
 
     protected static final Logger logger = LogManager.getLogger(MsiAuthToken.class);
+    public static long SKEW = 1;
 
 
     public static String aquireMsiToken(String resourceURI) throws Exception  {
