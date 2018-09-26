@@ -5,7 +5,7 @@
 
 	<groupId>com.microsoft.sqlserver.msi</groupId>
 	<artifactId>msi-mssql-jdbc</artifactId>
-	<version>2.0.1</version>
+	<version>2.0.2</version>
 	<packaging>jar</packaging>
 
 
@@ -41,7 +41,6 @@
              <groupId>com.microsoft.sqlserver</groupId>
              <artifactId>mssql-jdbc</artifactId>
               <version>6.4.0.jre7</version>
-              <scope>compile</scope>
         </dependency>
          <dependency>
             <groupId>org.apache.tomcat</groupId>
@@ -65,18 +64,21 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-aop</artifactId>
             <version>${org.springframework-version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
             <version>1.6.11</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>1.6.11</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>

@@ -30,6 +30,7 @@ public class MsiAuthToken {
 
 
     public static String aquireMsiToken(String resourceURI) throws Exception  {
+
         String endpoint = System.getenv("MSI_ENDPOINT");
         String secret = System.getenv("MSI_SECRET");
 
@@ -90,5 +91,39 @@ public class MsiAuthToken {
             throw e;
         }
         return 0;
+    }
+
+    public static boolean isMsiEnabled(String jdbcUrl) {
+
+        // Environment variable overrides any context setting or url set
+        String msiEnableEnv = System.getenv("JDBC_MSI_ENABLE");
+        if (!StringUtils.isEmpty(msiEnableEnv) && msiEnableEnv.compareToIgnoreCase("true") == 0) {
+            logger.debug("MSI Enabled in Environement");
+            return true;
+        }
+
+        // Application Setting variable overrides any context setting or url set
+        msiEnableEnv = System.getenv("APPSETTING_JDBC_MSI_ENABLE");
+        if ( !StringUtils.isEmpty(msiEnableEnv) && msiEnableEnv.compareToIgnoreCase("true") == 0) {
+            logger.debug("MSI Enabled in AppSetting Environement");
+            return true;
+        }
+
+        // URL Setting variable overrides any context setting
+        if ( jdbcUrl != null ) {
+            jdbcUrl = jdbcUrl.replaceAll("\\s+", "");
+
+            if ( jdbcUrl.indexOf("msiEnable=true") > 0) {
+                logger.debug("MSI Enabled in Url reference");
+                return true;
+            }
+        }
+        return  false;
+    }
+
+    static void cacheToken(String accessToken) throws Exception {
+        logger.debug("Caching Token and expiration");
+        MsiTokenCache.saveExpiration(getTokenExpiration(accessToken));
+        MsiTokenCache.saveToken(accessToken);
     }
 }
