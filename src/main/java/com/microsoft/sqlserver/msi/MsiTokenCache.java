@@ -35,7 +35,7 @@ public class MsiTokenCache {
 
     public static void saveExpiration(String expiration) throws Exception {
         try {
-            Date dateFmt = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss a X").parse(expiration);
+            Date dateFmt = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a X").parse(expiration);
             long expLong= dateFmt.getTime() / 1000;
 
             saveExpiration(expLong);
@@ -45,7 +45,7 @@ public class MsiTokenCache {
         }
     }
 
-    private static void saveExpiration(long expiration) {
+    public static void saveExpiration(long expiration) {
         cache = getCache();
         cache.put(KEY_EXPIRE,new Long(expiration));
     }
