@@ -29,6 +29,66 @@ az ad sp show --id <id_created_above>
 
 az sql server ad-admin create --resource-group <resource_group> --server-name <sql_server_name>  --display-name <admin_account_name> --object-id <id_created_above>
 ```
+### Enable MSI flag 
+
+There are currently 2 ways to enable MSI for datasource connection Factory
+
+- Environment variable: `JDBC_MSI_ENABLE=true`, set it in ApplicationSettings for Azure WebApp
+
+- jdbcURL flag: to set it add in jdbc connection string `msiEnable=true`. E.g `jdbc:sqlserver://server.database.windows.net:1433;database=db;msiEnable=true;...`
+
+
+# Tomcat JDBC Pool - using JdbcInterceptor
+There are two connection pools generally used by Tomcat server - DBCP and Tomcat JDBC. While DBCP is the default one, Tomcat JDBC pool provides 
+a better way to intercept connections being established. This solution is relying to using Tomcat JDBC pool, for DBCP refer to section below.
+
+## Add libraries to application
+In application `pom.xml` include the following libs, to be deployed with the application
+This library Jar as well as JDBC driver for SQL Server that supports Token based authentication
+
+```
+        <dependency>
+            <groupId>com.microsoft.sqlserver.msi</groupId>
+            <artifactId>msi-mssql-jdbc</artifactId>
+	        <version>2.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>6.4.0.jre7</version>
+        </dependency>
+        
+```        
+## Define the Datasource with MSI interceptor
+ To define JNDI Datsource for Tomact Application, add file `META-INF/context.xml` to the application.
+ In this example it's added to `main/webapp/META-INF/context.xml` anc contains the following datasource definition using Tomcat JDBC pool
+ and MSI interceptor:
+ 
+ ```
+ <Context>
+     <Resource auth="Container" 
+         driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+         maxActive="8" maxIdle="4" 
+         name="jdbc/tutorialDS" type="javax.sql.DataSource"
+         url="${SQLDB_URL}"
+         factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+         jdbcInterceptors="com.microsoft.sqlserver.msi.MsiTokenInterceptor"/>
+
+ </Context>
+ ```
+ 
+ - `url` points to url, in the example above provided by environment variable set by `JAVA_OPTS`
+
+
+# Tomcat DBCP Pool - using Spring AOP
+If application needs DBCP as its connection pool, solution to intercept connection is based on Spring AOP to inject the aspect that will refresh token.
 
 ## Add libraries to Application
 
@@ -41,7 +101,7 @@ and libraries required to activate aspects
         <dependency>
             <groupId>com.microsoft.sqlserver.msi</groupId>
             <artifactId>msi-mssql-jdbc</artifactId>
-	        <version>2.0.1</version>
+	        <version>2.0.2</version>
         </dependency>
 
         <dependency>
@@ -104,22 +164,14 @@ In this example it's added to `main/webapp/META-INF/context.xml` anc contains th
         name="jdbc/tutorialDS" type="javax.sql.DataSource"
         url="${SQLDB_URL}"
         factory="org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory" />
-    
 </Context>
 ```
 
 - `url` points to url, in the example above provided by environment variable set by `JAVA_OPTS`
 
-### Enable MSI for the JDBC Connection Factory
-
-There are currently 2 ways to enable MSI for datasource connection Factory
-
-- Environment variable: `JDBC_MSI_ENABLE=true`, set it in ApplicationSettings for Azure WebApp
-
-- jdbcURL flag: to set it add in jdbc connection string `msiEnable=true`. E.g `jdbc:sqlserver://server.database.windows.net:1433;database=db;msiEnable=true;...`
 
 
-## To build :
+# Build and publish application to Maven Central :
 `mvn clean package`
 and copy resulting jar file in the application directory
 
@@ -144,5 +196,6 @@ mvn clean deploy
 ```
 
 Verify in central after 30 min
+
 ### References
 [ADAL4J](https://github.com/AzureAD/azure-activedirectory-library-for-java)
