@@ -196,6 +196,8 @@ mvn clean deploy
 ```
 
 Verify in central after 30 min
+https://repo.maven.apache.org/maven2/com/microsoft/sqlserver/msi/msi-mssql-jdbc/
+
 
 ### References
 [ADAL4J](https://github.com/AzureAD/azure-activedirectory-library-for-java)
