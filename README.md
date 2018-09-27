@@ -65,6 +65,13 @@ This library Jar as well as JDBC driver for SQL Server that supports Token based
             <version>6.4.0.jre7</version>
         </dependency>
         
+        </dependency><dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+
+        
 ```        
 ## Define the Datasource with MSI interceptor
  To define JNDI Datsource for Tomact Application, add file `META-INF/context.xml` to the application.
@@ -133,6 +140,13 @@ and libraries required to activate aspects
             <artifactId>aspectjweaver</artifactId>
             <version>1.6.11</version>
         </dependency>
+
+        </dependency><dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+
 ```        
 ## Enable MSI token refreshing Aspect
 Add aspect bean to beans definitions - `application-context.xml` or `*-dispatcher-servlet.xml` 
