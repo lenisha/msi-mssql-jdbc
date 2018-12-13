@@ -1,5 +1,6 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.microsoft.sqlserver.msi/msi-mssql-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.microsoft.sqlserver.msi/msi-mssql-jdbc)
 
+Article describing usage step by step: https://dzone.com/articles/migrating-java-applications-to-azure-app-service-p
 
 # DataSource factory for Tomcat leveraging Azure MSI (Managed Service Identity)
 
