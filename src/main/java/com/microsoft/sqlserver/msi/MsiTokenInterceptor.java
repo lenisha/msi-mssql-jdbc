@@ -12,7 +12,7 @@ public class MsiTokenInterceptor extends JdbcInterceptor {
     @Override
     public void reset(ConnectionPool parent, PooledConnection con) {
         logger.debug("Reset connection pool started");
-        if ( parent == null || con == null ) return;
+        if ( parent == null ) return;
 
         try {
             if ( !MsiAuthToken.isMsiEnabled(parent.getPoolProperties().getUrl()) )
@@ -33,7 +33,8 @@ public class MsiTokenInterceptor extends JdbcInterceptor {
                 parent.getPoolProperties().getDbProperties().setProperty("accessToken", accessToken);
                 MsiAuthToken.cacheToken(accessToken);
                 // need to refresh connection with new token
-                con.connect();
+                if (con != null)
+                  con.connect();
             }
         } catch (Throwable e) {
             logger.error("Exception caught on reconnect:" + e.getMessage());
