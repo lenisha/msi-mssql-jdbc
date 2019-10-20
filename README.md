@@ -51,7 +51,7 @@ This library Jar as well as JDBC driver for SQL Server that supports Token based
         <dependency>
             <groupId>com.microsoft.sqlserver.msi</groupId>
             <artifactId>msi-mssql-jdbc</artifactId>
-	        <version>2.0.2</version>
+	        <version>2.0.3</version>
         </dependency>
 
         <dependency>
@@ -109,7 +109,7 @@ and libraries required to activate aspects
         <dependency>
             <groupId>com.microsoft.sqlserver.msi</groupId>
             <artifactId>msi-mssql-jdbc</artifactId>
-	        <version>2.0.2</version>
+	        <version>2.0.3</version>
         </dependency>
 
         <dependency>
@@ -209,6 +209,9 @@ mvn clean deploy
 mvn versions:set -DnewVersion=1.1.0
 mvn clean deploy
 ```
+
+Check in OSSRH
+https://oss.sonatype.org (username/password in settings.xml)
 
 Verify in central after 30 min
 https://repo.maven.apache.org/maven2/com/microsoft/sqlserver/msi/msi-mssql-jdbc/
